@@ -1,0 +1,163 @@
+import streamlit as st
+import numpy as np
+import plotly.graph_objects as go
+import pandas as pd
+
+
+# Function to generate geometric Brownian motion paths
+def geo_paths(S, T, r, q, sigma, steps, N):
+    dt = T / steps
+    ST = np.log(S) + np.cumsum(
+        (
+            (r - q - sigma**2 / 2) * dt
+            + sigma * np.sqrt(dt) * np.random.normal(size=(steps, N))
+        ),
+        axis=0,
+    )
+    return np.exp(ST)
+
+
+# Sidebar
+st.sidebar.title("Navigation")
+selection = st.sidebar.radio(
+    "Go to",
+    [
+        "Home",
+        "GSM for Monte Carlo Simulations",
+        "Advantages and Disadvantages",
+        "Mathematical Explanation",
+        "Calculator",
+    ],
+)
+
+# Home Page
+if selection == "Home":
+    st.title("Monte Carlo Option Pricing")
+
+    # Introduction
+    st.write(
+        "Options pricing involves forecasting the future value of financial instruments, providing investors "
+        "with insights into potential risks and returns. The calculator utilizes a Monte Carlo simulation, a statistical "
+        "technique that generates a multitude of potential outcomes to approximate the distribution of potential prices."
+    )
+
+    # Geometric Brownian Motion
+    st.write(
+        "The foundation of the Options Price Calculator lies in Geometric Brownian Motion (GBM), a mathematical model "
+        "for the unpredictable movements of financial markets. GBM assumes a constant drift accompanied by random shocks, "
+        "capturing the inherent uncertainty in stock prices."
+    )
+
+    # Monte Carlo Simulation
+    st.write(
+        "Monte Carlo simulations apply a chosen model—in this case, GBM—to a vast set of random trials. "
+        "By running these simulations, the calculator produces a range of plausible future outcomes, allowing users "
+        "to gauge the potential risks and rewards associated with options."
+    )
+
+# GSM for Monte Carlo Simulations Page
+elif selection == "GSM for Monte Carlo Simulations":
+    st.title("GSM for Monte Carlo Simulations")
+    # Add content for the GSM for Monte Carlo Simulations page
+
+# Advantages and Disadvantages Page
+elif selection == "Advantages and Disadvantages":
+    st.title("Advantages and Disadvantages of Using GSM for MCS")
+    # Add content for the Advantages and Disadvantages page
+
+# Mathematical Explanation Page
+elif selection == "Mathematical Explanation":
+    st.title("Mathematical Explanation")
+    # Add content for the Mathematical Explanation page
+
+# Calculator Page
+elif selection == "Calculator":
+    st.title("Monte Carlo Option Pricing Calculator")
+
+    # Take user input for option parameters
+    S_input = st.number_input("Enter current stock price (S)", value=100.0)
+    K_input = st.number_input("Enter strike price (K)", value=100.0)
+    days_until_expiry_input = st.number_input("Enter Days Until Expiration", value=30)
+    r_input = st.number_input(
+        "Enter risk-free interest rate (r) in annual %", value=5.0
+    )
+    q_input = st.number_input("Enter dividend yield (q) in annual %", value=2.0)
+    sigma_input = st.number_input("Enter annual volatility (sigma) in %", value=25.0)
+    steps_input = st.number_input("Enter number of time steps", value=100)
+    N_input = st.number_input("Enter number of trials", value=1000)
+
+    # Add a "Generate Paths" button
+    generate_button = st.button("Generate Paths and calculate")
+
+    # Placeholder for option metrics
+    option_price = 0
+
+    # Calculate option price using Monte Carlo simulation when the button is clicked
+    if generate_button:
+        T_input = days_until_expiry_input / 365.0  # Convert days to years
+        paths = geo_paths(
+            S_input,
+            T_input,
+            r_input / 100.0,
+            q_input / 100.0,
+            sigma_input / 100.0,
+            steps_input,
+            N_input,
+        )
+
+        # Calculate option price using Monte Carlo simulation when the button is clicked
+        T_input = days_until_expiry_input / 365.0  # Convert days to years
+        paths = geo_paths(
+            S_input,
+            T_input,
+            r_input / 100.0,
+            q_input / 100.0,
+            sigma_input / 100.0,
+            steps_input,
+            N_input,
+        )
+
+        # Calculate option price using Monte Carlo simulation
+        payoffs = np.maximum(paths[-1] - K_input, 0)
+        option_price = np.mean(payoffs) * np.exp(
+            -r_input / 100.0 * T_input
+        )  # discounting back to present value
+
+        # Display option pricing results in a table
+        st.subheader("Option Pricing Results")
+        results_data = {
+            "Option Type": ["Call"],
+            "Spot Price": [S_input],
+            "Strike Price": [K_input],
+            "Days Until Expiry": [days_until_expiry_input],
+            "Volatility": [sigma_input],
+            "Risk-Free Rate": [r_input],
+            "Simulations": [N_input],
+            "Option Price": [option_price],
+        }
+        results_df = pd.DataFrame(results_data)
+        st.table(results_df)
+
+        # Plot the generated paths interactively using Plotly
+        st.subheader("Geometric Brownian Motion Paths")
+        fig = go.Figure()
+        for i in range(N_input):
+            fig.add_trace(
+                go.Scatter(
+                    x=np.arange(steps_input + 1),
+                    y=paths[:, i],
+                    mode="lines",
+                    name=f"Path {i+1}",
+                )
+            )
+
+        fig.update_layout(
+            title="Geometric Brownian Motion Paths",
+            xaxis_title="Time Increments",
+            yaxis_title="Stock Price",
+            showlegend=True,
+            height=600,  # Adjust the height of the plot
+            width=800,  # Adjust the width of the plot
+        )
+
+        st.plotly_chart(fig)
