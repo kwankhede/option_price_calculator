@@ -21,6 +21,7 @@ st.sidebar.title("Navigation")
 selected_page = st.sidebar.radio("Go to", page_options)
 
 # Main content
+st.image("monte.png", use_column_width=True)
 if selected_page == "Options Overview":
     show_home_page()
 elif selected_page == "Pricing Methods":
