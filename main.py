@@ -7,6 +7,30 @@ from monte_carlo_calculator import monte_carlo_option_pricing
 from references import show_references
 import time
 
+
+
+# DESIGN implement changes to the standard streamlit UI/UX
+st.set_page_config(
+    page_title="Options",
+    #page_icon="images/logo_news.png",
+)
+
+
+# Design change spinner color to primary color
+st.markdown(
+    """<style>.stSpinner > div > div {border-top-color: #9d03fc;}</style>""",
+    unsafe_allow_html=True,
+)
+
+# Design hide "made with streamlit" footer menu area
+hide_streamlit_footer = """<style>#MainMenu {visibility: hidden;}
+                        footer {visibility: hidden;}</style>"""
+
+st.markdown(hide_streamlit_footer, unsafe_allow_html=True)
+
+
+
+
 # Function to check if 5 hours have passed
 @st.cache(ttl=60 * 60 * 5)  # 60 seconds * 60 minutes * 5 hours
 def check_time():
